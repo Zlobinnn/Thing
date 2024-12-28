@@ -122,6 +122,10 @@ export default function DrawingCanvas({ onComplete }: DrawingCanvasProps) {
     ctx.beginPath();
     ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
 
+    // Рисуем точку при одиночном клике
+    ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+    ctx.stroke();
+
     setIsDrawing(true);
     setIsErasing(e.button === 2);
   };
