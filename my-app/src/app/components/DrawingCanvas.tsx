@@ -147,23 +147,29 @@ export default function DrawingCanvas({ onComplete }: DrawingCanvasProps) {
   };
 
   const handleComplete = () => {
+    if (!isDrawingVisible) {
+      onComplete(""); // Если канвас не виден, закрываем компонент, передав пустую строку
+      return;
+    }
+  
     const canvas = canvasRef.current;
     if (!canvas) return;
-
+  
     const finalCanvas = document.createElement("canvas");
     finalCanvas.width = canvas.width;
     finalCanvas.height = canvas.height;
-
+  
     const finalCtx = finalCanvas.getContext("2d");
     if (!finalCtx) return;
-
+  
     finalCtx.fillStyle = "white";
     finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
     finalCtx.drawImage(canvas, 0, 0);
-
+  
     const drawingData = finalCanvas.toDataURL("image/png");
     onComplete(drawingData);
   };
+  
 
   const preventContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
     e.preventDefault();
