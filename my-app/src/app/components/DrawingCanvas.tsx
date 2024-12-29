@@ -5,6 +5,7 @@ import HelpButton from "@/app/components/HelpButton";
 
 interface DrawingCanvasProps {
   onComplete: (drawingData: string) => void;
+  ws: WebSocket | null; // Добавляем WebSocket в пропсы
 }
 
 const imageFolders: Record<number, string> = {
@@ -23,8 +24,9 @@ const instructions: Record<number, string> = {
   6: "Объясни, отвечая только да, нет, не имеет значение",
 };
 
-export default function DrawingCanvas({ onComplete }: DrawingCanvasProps) {
+export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const hasRequestedImage = useRef(false); // Перенесли на верхний уровень компонента
   const [isDrawing, setIsDrawing] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
   const [randomImage, setRandomImage] = useState<string | null>(null);
@@ -32,75 +34,80 @@ export default function DrawingCanvas({ onComplete }: DrawingCanvasProps) {
   const [instruction, setInstruction] = useState<string>("");
   const [imageFolder, setImageFolder] = useState<number>(0);
   const [imageTimer, setImageTimer] = useState<NodeJS.Timeout | null>(null);
-  const [isDrawingVisible, setIsDrawingVisible] = useState<boolean>(false); // для показа/скрытия канваса
-
-  // Получаем изображения из папки
-  const getImagesFromFolder = (folder: string) => {
-    return [
-      `${folder}/Screenshot_1.png`,
-      `${folder}/Screenshot_2.png`,
-      // Добавьте больше изображений, если нужно
-    ];
-  };
-
-  // Получаем случайное изображение из одной из папок
-  const getRandomImage = () => {
-    const folderKeys = Object.keys(imageFolders).map(Number);
-    const randomFolder = folderKeys[Math.floor(Math.random() * folderKeys.length)];
-    const folderPath = imageFolders[randomFolder];
-    const images = getImagesFromFolder(folderPath);
-    const randomImage = images[Math.floor(Math.random() * images.length)];
-    return { randomImage, folder: randomFolder };
-  };
+  const [isDrawingVisible, setIsDrawingVisible] = useState<boolean>(false);
 
   useEffect(() => {
-    const { randomImage, folder } = getRandomImage();
-    setRandomImage(randomImage);
-    setImageFolder(folder);
-    setInstruction(instructions[folder]);
+    if (!ws) return;
 
-    let countdown = 0;
-    switch (folder) {
-      case 2:
-      case 5:
-      case 6:
-        countdown = 30; // Таймер на 30 секунд
-        setIsDrawingVisible(false); // Не показывать канвас
-        break;
-      case 3:
-        countdown = 10; // Таймер на 10 секунд
-        setIsDrawingVisible(false); // Канвас пока не показываем
-        break;
-      case 4:
-        countdown = 30; // Таймер на 30 секунд
-        setIsDrawingVisible(true); // Показываем канвас сразу
-        break;
-      default:
-        countdown = 30;
-        setIsDrawingVisible(true); // По умолчанию показываем канвас
+    if (!hasRequestedImage.current) {
+      hasRequestedImage.current = true;
+
+      // Отправляем запрос на изображение
+      ws.send(
+        JSON.stringify({
+          type: "requestImage",
+        })
+      );
     }
 
-    setTimer(countdown);
+    const handleMessage = (event: MessageEvent) => {
+      const data = JSON.parse(event.data);
 
-    // Запуск таймера
-    if (imageTimer) clearInterval(imageTimer);
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setRandomImage(null);
-          if (folder === 3) {
-            setIsDrawingVisible(true); // Показываем канвас после окончания таймера
-          }
+      if (data.type === "newImage") {
+        setRandomImage(data.image);
+        setImageFolder(data.folder);
+        setInstruction(instructions[data.folder]);
+
+        let countdown = 0;
+        switch (data.folder) {
+          case 2:
+          case 5:
+          case 6:
+            countdown = 30;
+            setIsDrawingVisible(false);
+            break;
+          case 3:
+            countdown = 10;
+            setIsDrawingVisible(false);
+            break;
+          case 4:
+            countdown = 30;
+            setIsDrawingVisible(true);
+            break;
+          default:
+            countdown = 30;
+            setIsDrawingVisible(true);
         }
-        return prev - 1;
-      });
-    }, 1000);
-    setImageTimer(interval);
 
-    // Очистка таймера при размонтировании компонента
-    return () => clearInterval(interval);
-  }, [imageFolder]);
+        setTimer(countdown);
+
+        // Очищаем предыдущий таймер
+        if (imageTimer) clearInterval(imageTimer);
+        const interval = setInterval(() => {
+          setTimer((prev) => {
+            if (prev <= 1) {
+              clearInterval(interval);
+              setRandomImage(null);
+              if (data.folder === 3) {
+                setIsDrawingVisible(true);
+              }
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        setImageTimer(interval);
+      }
+    };
+
+    ws.addEventListener("message", handleMessage);
+
+    return () => {
+      ws.removeEventListener("message", handleMessage);
+      if (imageTimer) clearInterval(imageTimer);
+    };
+  }, [ws, imageTimer]);
+  
+  
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -109,11 +116,9 @@ export default function DrawingCanvas({ onComplete }: DrawingCanvasProps) {
     if (!ctx) return;
 
     if (e.button === 2) {
-      // ПКМ (стираем)
       ctx.globalCompositeOperation = "destination-out";
       ctx.lineWidth = 20;
     } else {
-      // ЛКМ (рисуем)
       ctx.globalCompositeOperation = "source-over";
       ctx.lineWidth = 10;
       ctx.strokeStyle = "black";
@@ -123,7 +128,6 @@ export default function DrawingCanvas({ onComplete }: DrawingCanvasProps) {
     ctx.beginPath();
     ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
 
-    // Рисуем точку при одиночном клике
     ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
     ctx.stroke();
 
@@ -149,28 +153,27 @@ export default function DrawingCanvas({ onComplete }: DrawingCanvasProps) {
 
   const handleComplete = () => {
     if (!isDrawingVisible) {
-      onComplete(""); // Если канвас не виден, закрываем компонент, передав пустую строку
+      onComplete("");
       return;
     }
-  
+
     const canvas = canvasRef.current;
     if (!canvas) return;
-  
+
     const finalCanvas = document.createElement("canvas");
     finalCanvas.width = canvas.width;
     finalCanvas.height = canvas.height;
-  
+
     const finalCtx = finalCanvas.getContext("2d");
     if (!finalCtx) return;
-  
+
     finalCtx.fillStyle = "white";
     finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
     finalCtx.drawImage(canvas, 0, 0);
-  
+
     const drawingData = finalCanvas.toDataURL("image/png");
     onComplete(drawingData);
   };
-  
 
   const preventContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
     e.preventDefault();

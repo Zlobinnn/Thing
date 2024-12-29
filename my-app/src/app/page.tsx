@@ -129,7 +129,7 @@ export default function Home() {
       )}
 
       {/* Окно рисования */}
-      {isDrawing && <DrawingCanvas onComplete={handleDrawingComplete} />}
+      {isDrawing && ws && <DrawingCanvas ws={ws} onComplete={handleDrawingComplete} />}
 
       {/* Отображение полученного рисунка */}
       {receivedDrawing && (
