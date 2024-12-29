@@ -62,3 +62,47 @@
   border: 2px solid black;
   border-radius: 8px;
 }
+
+.roleDisplay {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #0070f3;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 16px;
+  z-index: 4000;
+}
+
+.playerList {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  width: 150px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.player {
+  padding: 5px;
+  margin-bottom: 5px;
+  background-color: #fff;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.player:last-child {
+  margin-bottom: 0;
+}
+
+.leader {
+  border: 2px solid green;
+  font-weight: bold;
+}
