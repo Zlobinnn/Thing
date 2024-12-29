@@ -4,6 +4,10 @@ import styles from "./page.module.css";
 import Area from "@/app/components/area";
 import DrawingCanvas from "@/app/components/DrawingCanvas";
 
+interface PlayerTimer {
+  [key: string]: number; // Объект, где ключ — имя игрока, а значение — оставшееся время
+}
+
 export default function Home() {
   const [isDrawing, setIsDrawing] = useState(false); // Состояние режима рисования
   const [receivedDrawing, setReceivedDrawing] = useState<string | null>(null); // Полученное изображение
@@ -12,9 +16,9 @@ export default function Home() {
   const [isLeaderPresent, setIsLeaderPresent] = useState(false); // Есть ли ведущий
   const [players, setPlayers] = useState<string[]>([]); // Список игроков
   const [leader, setLeader] = useState<string | null>(null); // Имя текущего ведущего
+  const [playerTimers, setPlayerTimers] = useState<PlayerTimer>({}); // Таймеры для игроков
 
   useEffect(() => {
-    //const socket = new WebSocket("https://392a-94-19-242-214.ngrok-free.app");
     const socket = new WebSocket("ws://localhost:8080");
 
     socket.onopen = () => {
@@ -44,12 +48,35 @@ export default function Home() {
         setLeader(data.leader); // Устанавливаем текущего ведущего
       } else if (data.type === "updatePlayers") {
         setPlayers(data.players); // Обновляем список игроков
+      } else if (data.type === "updateTimer") {
+        // Обновляем таймер для игрока
+        setPlayerTimers((prevTimers) => ({
+          ...prevTimers,
+          [data.player]: data.timer,
+        }));
       }
     };
 
     return () => {
       socket.close();
     };
+  }, []);
+
+  useEffect(() => {
+    // Уменьшаем таймеры каждую секунду
+    const interval = setInterval(() => {
+      setPlayerTimers((prevTimers) => {
+        const updatedTimers = { ...prevTimers };
+        Object.keys(updatedTimers).forEach((player) => {
+          if (updatedTimers[player] > 0) {
+            updatedTimers[player] -= 1;
+          }
+        });
+        return updatedTimers;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleDrawingStart = () => {
@@ -102,6 +129,9 @@ export default function Home() {
             }`}
           >
             {player}
+            {playerTimers[player] > 0 && (
+              <span className={styles.timer}> {playerTimers[player]}s</span>
+            )}
           </div>
         ))}
       </div>
