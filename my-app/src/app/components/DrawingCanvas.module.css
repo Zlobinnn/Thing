@@ -1,11 +1,14 @@
 .drawingContainer {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    position: relative;
-  }
+  display: flex;
+  flex-direction: row;
+  align-items: center; /* Центровка по вертикали */
+  justify-content: center; /* Центровка по горизонтали */
+  gap: 20px;
+  position: relative;
+  height: 100vh; /* Занимает всю высоту экрана */
+  margin: 0; /* Убираем отступ сверху */
+}
+
   
   .imageContainer {
     flex: 0 0 auto;
