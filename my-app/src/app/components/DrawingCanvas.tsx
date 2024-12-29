@@ -1,6 +1,7 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
 import styles from "./DrawingCanvas.module.css";
+import HelpButton from "@/app/components/HelpButton";
 
 interface DrawingCanvasProps {
   onComplete: (drawingData: string) => void;
@@ -187,6 +188,7 @@ export default function DrawingCanvas({ onComplete }: DrawingCanvasProps) {
       </div>
       <div className={styles.instructionContainer}>
         {instruction && <p>{instruction}</p>}
+        <HelpButton params={{ type: imageFolder }} />
       </div>
       <div className={styles.canvasContainer}>
         {isDrawingVisible && (
