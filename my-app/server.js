@@ -39,19 +39,19 @@ function getRandomImage() {
     (image) => !usedImages.has(image.path)
   );
   if (availableImages.length === 0) {
-    // Если все изображения использованы
     console.log("Все изображения использованы.");
-    // Отправляем клиенту сообщение о завершении выбора
     return { allImagesSelected: true };
   }
   const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
   usedImages.add(randomImage.path);
 
-  // Выводим в консоль список использованных изображений
   console.log("Обновлённый список использованных изображений:", [...usedImages]);
 
   return { image: randomImage, allImagesSelected: false };
 }
+
+// Таймеры для каждого клиента
+let clientTimers = new Map();
 
 server.on("connection", (ws) => {
   console.log("Новый клиент подключился!");
@@ -62,25 +62,21 @@ server.on("connection", (ws) => {
       const data = JSON.parse(message);
 
       if (data.type === "join") {
-        // Добавляем нового игрока
         ws.name = data.name;
         clients.push(ws);
 
-        // Рассылаем обновлённый список игроков
         broadcastPlayers();
       } else if (data.type === "setRole") {
         if (data.role === "Ведущий") {
-          leader = ws; // Устанавливаем текущего ведущего
+          leader = ws;
         } else if (data.role === "Игрок" && leader === ws) {
-          leader = null; // Сбрасываем ведущего
+          leader = null;
         }
 
-        // Рассылаем обновление роли всем клиентам
         broadcastRole();
       } else if (data.type === "requestImage") {
-        // Отправляем случайное изображение
         const { image, allImagesSelected } = getRandomImage();
-        
+
         if (allImagesSelected) {
           ws.send(
             JSON.stringify({
@@ -89,18 +85,49 @@ server.on("connection", (ws) => {
             })
           );
         } else {
+          const countdown = getCountdown(image.folder);
+
+          broadcastTimerUpdate(countdown);
+          
           ws.send(
             JSON.stringify({
               type: "newImage",
-              image: image.path, // Отправляем путь без "public"
+              image: image.path,
               folder: image.folder,
+              timer: countdown,
             })
           );
+
+          // Запуск таймера на сервере
+          if (clientTimers.has(ws)) {
+            clearInterval(clientTimers.get(ws));
+          }
+
+          let timer = countdown;
+          const interval = setInterval(() => {
+            timer -= 1;
+            if (timer <= 0) {
+              clearInterval(interval);
+              ws.send(
+                JSON.stringify({
+                  type: "timerEnd",
+                })
+              );
+            } else {
+              ws.send(
+                JSON.stringify({
+                  type: "timerUpdate",
+                  timer: timer,
+                })
+              );
+            }
+          }, 1000);
+
+          clientTimers.set(ws, interval);
         }
       } else if (data.type === "drawing") {
         console.log("Получен рисунок от клиента");
 
-        // Рассылаем рисунок всем клиентам
         clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
             client.send(
@@ -117,15 +144,18 @@ server.on("connection", (ws) => {
     }
   });
 
-  // Обработка отключения клиента
   ws.on("close", () => {
     console.log("Клиент отключился");
     clients = clients.filter((client) => client !== ws);
     if (leader === ws) {
-      leader = null; // Сбрасываем ведущего, если он отключился
+      leader = null;
     }
 
-    // Уведомляем всех клиентов об обновлении
+    if (clientTimers.has(ws)) {
+      clearInterval(clientTimers.get(ws));
+      clientTimers.delete(ws);
+    }
+
     broadcastPlayers();
     broadcastRole();
   });
@@ -133,20 +163,6 @@ server.on("connection", (ws) => {
   ws.on("error", (error) => {
     console.error("Ошибка соединения:", error);
   });
-  
-
-  ws.on("message", (message) => {
-    try {
-      const decodedMessage = message.toString(); // Преобразуем буфер в строку
-      console.log("Получено сообщение от клиента:", decodedMessage); // Логируем строку
-  
-      const data = JSON.parse(decodedMessage); // Парсим JSON
-      // (остальная обработка сообщений)
-    } catch (err) {
-      console.error("Ошибка обработки сообщения:", err);
-    }
-  });
-  
 });
 
 function broadcastPlayers() {
@@ -176,5 +192,32 @@ function broadcastRole() {
     }
   });
 }
+
+// Возвращает длительность таймера в зависимости от папки
+function getCountdown(folder) {
+  switch (folder) {
+    case 2:
+    case 5:
+    case 6:
+      return 30;
+    case 3:
+      return 10;
+    case 4:
+    default:
+      return 30;
+  }
+}
+
+function broadcastTimerUpdate(timer) {
+  const message = JSON.stringify({
+    type: "timerUpdate",
+    timer,
+  });
+
+  clients.forEach((client) => {
+    client.send(message);
+  });
+}
+
 
 console.log(`WebSocket сервер запущен на порту ${PORT}`);

@@ -26,14 +26,13 @@ const instructions: Record<number, string> = {
 
 export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const hasRequestedImage = useRef(false); // Перенесли на верхний уровень компонента
+  const hasRequestedImage = useRef(false); // Проверка на отправку запроса
   const [isDrawing, setIsDrawing] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
   const [randomImage, setRandomImage] = useState<string | null>(null);
   const [timer, setTimer] = useState<number>(0);
   const [instruction, setInstruction] = useState<string>("");
   const [imageFolder, setImageFolder] = useState<number>(0);
-  const [imageTimer, setImageTimer] = useState<NodeJS.Timeout | null>(null);
   const [isDrawingVisible, setIsDrawingVisible] = useState<boolean>(false);
 
   useEffect(() => {
@@ -57,45 +56,17 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
         setRandomImage(data.image);
         setImageFolder(data.folder);
         setInstruction(instructions[data.folder]);
+        setIsDrawingVisible(false); // Скрываем холст до завершения таймера
+        setTimer(data.timer); // Устанавливаем таймер с сервера
+      }
 
-        let countdown = 0;
-        switch (data.folder) {
-          case 2:
-          case 5:
-          case 6:
-            countdown = 30;
-            setIsDrawingVisible(false);
-            break;
-          case 3:
-            countdown = 10;
-            setIsDrawingVisible(false);
-            break;
-          case 4:
-            countdown = 30;
-            setIsDrawingVisible(true);
-            break;
-          default:
-            countdown = 30;
-            setIsDrawingVisible(true);
-        }
+      if (data.type === "timerUpdate") {
+        setTimer(data.timer);
+      }
 
-        setTimer(countdown);
-
-        // Очищаем предыдущий таймер
-        if (imageTimer) clearInterval(imageTimer);
-        const interval = setInterval(() => {
-          setTimer((prev) => {
-            if (prev <= 1) {
-              clearInterval(interval);
-              setRandomImage(null);
-              if (data.folder === 3) {
-                setIsDrawingVisible(true);
-              }
-            }
-            return prev - 1;
-          });
-        }, 1000);
-        setImageTimer(interval);
+      if (data.type === "timerEnd") {
+        setRandomImage(null);
+        setIsDrawingVisible(true); // Показываем холст после завершения таймера
       }
     };
 
@@ -103,11 +74,8 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
 
     return () => {
       ws.removeEventListener("message", handleMessage);
-      if (imageTimer) clearInterval(imageTimer);
     };
-  }, [ws, imageTimer]);
-  
-  
+  }, [ws]);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
