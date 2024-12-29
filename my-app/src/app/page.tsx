@@ -11,8 +11,8 @@ export default function Home() {
 
   React.useEffect(() => {
     // Инициализация WebSocket подключения
-    const socket = new WebSocket("ws://localhost:8080");
-    //const socket = new WebSocket("https://b2d1-94-19-242-214.ngrok-free.app");
+    //const socket = new WebSocket("ws://localhost:8080");
+    const socket = new WebSocket("https://392a-94-19-242-214.ngrok-free.app");
 
     socket.onopen = () => {
       console.log("WebSocket подключен");
