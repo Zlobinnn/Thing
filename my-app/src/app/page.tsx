@@ -19,8 +19,8 @@ export default function Home() {
   const [playerTimers, setPlayerTimers] = useState<PlayerTimer>({}); // Таймеры для игроков
 
   useEffect(() => {
-    // const socket = new WebSocket("ws://localhost:8080");
-    const socket = new WebSocket("https://0802-94-19-242-214.ngrok-free.app");
+    const socket = new WebSocket("ws://localhost:8080");
+    //const socket = new WebSocket("https://0802-94-19-242-214.ngrok-free.app");
 
     socket.onopen = () => {
       console.log("WebSocket подключен");
@@ -63,22 +63,22 @@ export default function Home() {
     };
   }, []);
 
-  useEffect(() => {
-    // Уменьшаем таймеры каждую секунду
-    const interval = setInterval(() => {
-      setPlayerTimers((prevTimers) => {
-        const updatedTimers = { ...prevTimers };
-        Object.keys(updatedTimers).forEach((player) => {
-          if (updatedTimers[player] > 0) {
-            updatedTimers[player] -= 1;
-          }
-        });
-        return updatedTimers;
-      });
-    }, 1000);
+  // useEffect(() => {
+  //   // Уменьшаем таймеры каждую секунду
+  //   const interval = setInterval(() => {
+  //     setPlayerTimers((prevTimers) => {
+  //       const updatedTimers = { ...prevTimers };
+  //       Object.keys(updatedTimers).forEach((player) => {
+  //         if (updatedTimers[player] > 0) {
+  //           updatedTimers[player] -= 1;
+  //         }
+  //       });
+  //       return updatedTimers;
+  //     });
+  //   }, 1000);
 
-    return () => clearInterval(interval);
-  }, []);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const handleDrawingStart = () => {
     if (role !== "Игрок" || isLeaderPresent) return;

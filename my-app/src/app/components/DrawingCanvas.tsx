@@ -56,17 +56,23 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
         setRandomImage(data.image);
         setImageFolder(data.folder);
         setInstruction(instructions[data.folder]);
-        setIsDrawingVisible(false); // Скрываем холст до завершения таймера
         setTimer(data.timer); // Устанавливаем таймер с сервера
+        if (data.folder === 4){
+          setIsDrawingVisible(true);
+        }
+        else
+          setIsDrawingVisible(false); // Скрываем холст до завершения таймера
       }
 
       if (data.type === "timerUpdate") {
         setTimer(data.timer);
       }
-
+      console.log(data.type);
       if (data.type === "timerEnd") {
+        if (data.folder === 3){
+          setIsDrawingVisible(true);
+        }
         setRandomImage(null);
-        setIsDrawingVisible(true); // Показываем холст после завершения таймера
       }
     };
 

@@ -21,6 +21,14 @@ const imageFolders = {
   6: "/6_danet",
 };
 
+const timersFolders = {
+  2: [10],
+  3: [5, 8, 10],
+  4: [8, 10],
+  5: [5, 10],
+  6: [10],
+}
+
 // Загружаем изображения
 let images = [];
 let usedImages = new Set(); // Храним пути использованных изображений
@@ -84,19 +92,19 @@ server.on("connection", (ws) => {
             })
           );
         } else {
-          const countdown = getCountdown(image.folder);
+          //const countdown = getCountdown(image.folder);
 
           ws.send(
             JSON.stringify({
               type: "newImage",
               image: image.path,
               folder: image.folder,
-              timer: countdown,
+              timer: timersFolders[image.folder],
             })
           );
 
           // Запуск таймера для этого игрока
-          setClientTimer(ws, countdown);
+          setClientTimer(ws, timersFolders[image.folder]);
         }
       } else if (data.type === "drawing") {
         console.log("Получен рисунок от клиента");
@@ -171,11 +179,11 @@ function setClientTimer(client, countdown) {
     clearInterval(clientTimers.get(client));
   }
 
-  clientCountdowns.set(client, countdown);
+  clientCountdowns.set(client, countdown[0]);
 
   const interval = setInterval(() => {
     let timeLeft = clientCountdowns.get(client) || 0;
-
+    console.log(timeLeft, countdown);
     if (timeLeft <= 0) {
       clearInterval(interval);
       clientTimers.delete(client);
@@ -186,6 +194,10 @@ function setClientTimer(client, countdown) {
           type: "timerEnd",
         })
       );
+      if (countdown.length>1){
+        const newCountdown = countdown.slice(1);
+        setClientTimer(client, newCountdown);
+      }
     } else {
       timeLeft -= 1;
       clientCountdowns.set(client, timeLeft);
@@ -217,20 +229,6 @@ function broadcastTimerUpdate(playerName, timer) {
       client.send(message);
     }
   });
-}
-
-function getCountdown(folder) {
-  switch (folder) {
-    case 2:
-    case 5:
-    case 6:
-      return 30;
-    case 3:
-      return 10;
-    case 4:
-    default:
-      return 30;
-  }
 }
 
 console.log(`WebSocket сервер запущен на порту ${PORT}`);
