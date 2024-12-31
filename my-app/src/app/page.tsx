@@ -19,7 +19,8 @@ export default function Home() {
   const [playerTimers, setPlayerTimers] = useState<PlayerTimer>({}); // Таймеры для игроков
 
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8080");
+    // const socket = new WebSocket("ws://localhost:8080");
+    const socket = new WebSocket("https://0802-94-19-242-214.ngrok-free.app");
 
     socket.onopen = () => {
       console.log("WebSocket подключен");
