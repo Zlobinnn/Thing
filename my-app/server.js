@@ -247,6 +247,7 @@ server.on("connection", (ws, req) => {
   });
 
   ws.on("close", () => {
+    usersByIp[ip].score = ws.score;
     console.log(`Клиент с IP ${ip} отключился`);
     clients = clients.filter((client) => client !== ws);
 
