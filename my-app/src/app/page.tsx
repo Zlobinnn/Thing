@@ -63,23 +63,6 @@ export default function Home() {
     };
   }, []);
 
-  // useEffect(() => {
-  //   // Уменьшаем таймеры каждую секунду
-  //   const interval = setInterval(() => {
-  //     setPlayerTimers((prevTimers) => {
-  //       const updatedTimers = { ...prevTimers };
-  //       Object.keys(updatedTimers).forEach((player) => {
-  //         if (updatedTimers[player] > 0) {
-  //           updatedTimers[player] -= 1;
-  //         }
-  //       });
-  //       return updatedTimers;
-  //     });
-  //   }, 1000);
-
-  //   return () => clearInterval(interval);
-  // }, []);
-
   const handleDrawingStart = () => {
     if (role !== "Игрок" || isLeaderPresent) return;
 

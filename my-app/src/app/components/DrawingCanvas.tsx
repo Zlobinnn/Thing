@@ -34,6 +34,7 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
   const [instruction, setInstruction] = useState<string>("");
   const [imageFolder, setImageFolder] = useState<number>(0);
   const [isDrawingVisible, setIsDrawingVisible] = useState<boolean>(false);
+  const [isImgVisible, setIsImgVisible] = useState<boolean>(true);
 
   useEffect(() => {
     if (!ws) return;
@@ -51,7 +52,7 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
 
     const handleMessage = (event: MessageEvent) => {
       const data = JSON.parse(event.data);
-
+      console.log(data);
       if (data.type === "newImage") {
         setRandomImage(data.image);
         setImageFolder(data.folder);
@@ -59,6 +60,7 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
         setTimer(data.timer); // Устанавливаем таймер с сервера
         if (data.folder === 4){
           setIsDrawingVisible(true);
+          console.log("set", isDrawingVisible);
         }
         else
           setIsDrawingVisible(false); // Скрываем холст до завершения таймера
@@ -72,7 +74,12 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
         if (data.folder === 3){
           setIsDrawingVisible(true);
         }
-        setRandomImage(null);
+        setIsImgVisible(false);
+      }
+
+      if (data.type === "guess"){
+        handleComplete();
+        setIsImgVisible(true);
       }
     };
 
@@ -81,7 +88,7 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
     return () => {
       ws.removeEventListener("message", handleMessage);
     };
-  }, [ws]);
+  }, [ws, isDrawingVisible, isImgVisible]);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -156,7 +163,7 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
   return (
     <div className={styles.drawingContainer}>
       <div className={styles.imageContainer}>
-        {randomImage && (
+        {randomImage && isImgVisible && (
           <>
             <img src={randomImage} alt="Random" className={styles.randomImage} />
             <div className={styles.timer}>{timer}s</div>

@@ -195,9 +195,18 @@ function setClientTimer(client, countdown) {
         })
       );
       if (countdown.length>1){
+        if (countdown.length===2){
+          client.send(
+            JSON.stringify({
+              type: "guess",
+            })
+          );
+        }
+        
         const newCountdown = countdown.slice(1);
         setClientTimer(client, newCountdown);
       }
+
     } else {
       timeLeft -= 1;
       clientCountdowns.set(client, timeLeft);
