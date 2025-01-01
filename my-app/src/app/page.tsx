@@ -34,8 +34,8 @@ export default function Home() {
   const [winner, setWinner] = useState<string | null>(null);
 
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8080");
-    //const socket = new WebSocket("https://0802-94-19-242-214.ngrok-free.app");
+    // const socket = new WebSocket("ws://localhost:8080");
+    const socket = new WebSocket("https://bc26-94-19-242-214.ngrok-free.app");
 
     socket.onopen = () => {
       console.log("WebSocket подключен");
