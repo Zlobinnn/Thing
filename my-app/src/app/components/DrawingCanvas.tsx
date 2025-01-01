@@ -199,9 +199,9 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
         )}
       </div>
 
-      <div className={styles.ans}>
+      {/* <div className={styles.ans}>
         {isAnsVis && (<>Ответ: {ans}</>)}
-      </div>
+      </div> */}
 
       <div className={styles.instructionContainer}>
         {instruction && <p>{instruction}</p>}
@@ -221,9 +221,9 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
             onContextMenu={preventContextMenu}
           ></canvas>
         )}
-        <button className={styles.completeButton} onClick={handleComplete}>
+        {/* <button className={styles.completeButton} onClick={handleComplete}>
           Готово
-        </button>
+        </button> */}
       </div>
     </div>
   );

@@ -9,6 +9,14 @@ interface PlayerTimer {
   [key: string]: number; // Объект, где ключ — имя игрока, а значение — оставшееся время
 }
 
+const gameTypes: Record<number, string> = {
+  2: "Штука",
+  3: "Фоторобот",
+  4: "Рисунок",
+  5: "Очевидец",
+  6: "Данетка",
+}
+
 export default function Home() {
   const [isDrawing, setIsDrawing] = useState(false); // Состояние режима рисования
   const [receivedDrawing, setReceivedDrawing] = useState<string | null>(null); // Полученное изображение
@@ -17,9 +25,12 @@ export default function Home() {
   const [isLeaderPresent, setIsLeaderPresent] = useState(false); // Есть ли ведущий
   const [players, setPlayers] = useState<string[]>([]); // Список игроков
   const [leader, setLeader] = useState<string | null>(null); // Имя текущего ведущего
+  const [ansplayer, setAnsplayer] = useState<string | null>(null);
+  const [isAnsplayer, setIsAnsplayer] = useState(false); // Есть ли ведущий
   const [playerTimers, setPlayerTimers] = useState<PlayerTimer>({}); // Таймеры для игроков
   const [answerModalData, setAnswerModalData] = useState<{ ansplayer: string; ans: string } | null>(null); // Данные для модального окна
   const [score, setScore] = useState<PlayerTimer>({});
+  const [isAnswerButtonActive, setIsAnswerButtonActive] = useState(false);
 
   useEffect(() => {
     const socket = new WebSocket("ws://localhost:8080");
@@ -39,7 +50,7 @@ export default function Home() {
       );
 
       // Устанавливаем начальную роль
-      setRole("Игрок");
+      // setRole("Игрок");
     };
 
     socket.onmessage = (event) => {
@@ -52,10 +63,12 @@ export default function Home() {
       } else if (data.type === "updateRole") {
         setIsLeaderPresent(data.isLeaderPresent); // Обновляем наличие ведущего
         setLeader(data.leader); // Устанавливаем текущего ведущего
+        setIsAnsplayer(data.isAnsplayer);
+        setAnsplayer(data.ansplayer);
       } else if (data.type === "updatePlayers") {
-        console.log(data);
         setPlayers(data.players); // Обновляем список игроков
         setScore(data.score);
+        setRole(data.folder);
       } else if (data.type === "updateTimer") {
         // Обновляем таймер для игрока
         setPlayerTimers((prevTimers) => ({
@@ -64,6 +77,14 @@ export default function Home() {
         }));
       } else if (data.type === "answer"){
         setAnswerModalData({ ansplayer: data.ansplayer, ans: data.ans });
+      } else if (data.type === "answerPlayer"){
+        setAnsplayer(data.ansplayer);
+      } else if (data.type === "guessing"){
+        setIsAnswerButtonActive(data.isGuessing);
+      } else if (data.type === "gameType"){
+        setRole(gameTypes[data.gameType]);
+        setReceivedDrawing(null);
+        setPlayerTimers({});
       }
       
     };
@@ -140,7 +161,7 @@ export default function Home() {
     <div className={styles.page}>
       {/* Отображение роли */}
       <div className={styles.roleDisplay}>
-        <strong>Роль:</strong> {role}
+        Тип игры: {role}
       </div>
 
       {/* Список игроков */}
@@ -151,6 +172,8 @@ export default function Home() {
             key={player}
             className={`${styles.player} ${
               leader === player ? styles.leader : ""
+            } ${
+              ansplayer === player ? styles.ansplayer : ""
             }`}
           >
             <div className={styles.playerInfo}>
@@ -169,22 +192,23 @@ export default function Home() {
       {!isDrawing && (
         <>
           {/* Кнопка "Рисовать" */}
-          <button
+          {/* <button
             className={styles.drawButton}
             onClick={handleDrawingStart}
             disabled={isLeaderPresent}
           >
             Рисовать
-          </button>
+          </button> */}
           {/* Основное игровое поле */}
           <Area />
           {/* Кнопка "Ответить" */}
-          <button
+          {isAnswerButtonActive && <button
             className={styles.answerButton}
             onClick={ansOnClick}
+            disabled={isAnsplayer}
           >
             Ответить
-          </button>
+          </button>}
         </>
       )}
 

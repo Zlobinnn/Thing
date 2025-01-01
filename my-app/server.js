@@ -106,6 +106,17 @@ server.on("connection", (ws) => {
             })
           );
 
+          clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(
+                JSON.stringify({
+                  type: "gameType",
+                  gameType: image.folder,
+                })
+              );
+            }
+          });
+
           // Запуск таймера для этого игрока
           setClientTimer(ws, timersFolders[image.folder]);
         }
@@ -144,14 +155,19 @@ server.on("connection", (ws) => {
             })
           );
         }
+        // clients.forEach((client) => {
+        //   if (client.readyState === WebSocket.OPEN) {
+        //     client.send(
+        //       JSON.stringify({
+        //         type: "answerPlayer",
+        //         ansplayer: playerName,
+        //       })
+        //     );
+        //   }
+        // });
+        broadcastRole();
       } else if (data.type === "answer yes") {
-        // Удалить таймер для игрока
-        // if (clientTimers.has(leader)) {
-        //   clearInterval(clientTimers.get(leader));
-        //   clientTimers.delete(leader);
-        //   clientCountdowns.delete(leader);
-        // }
-      
+        console.log(clientTimers,clientCountdowns);
         if (clientTimers.has(leader)) {
           clearInterval(clientTimers.get(leader));
           clientTimers.delete(leader);
@@ -160,9 +176,11 @@ server.on("connection", (ws) => {
 
         ansplayer.score += 2;
         leader.score += 1;
-        
+        ansplayer = null;
+
         broadcastPlayers();
         switchLeader();
+        broadcastRole();
       } else if (data.type === "answer no") {
         // Продолжить таймер для игрока
         if (clientCountdowns.has(leader)) {
@@ -171,7 +189,9 @@ server.on("connection", (ws) => {
         }
       
         ansplayer.score -= 1;
+        ansplayer = null;
         broadcastPlayers();
+        broadcastRole();
       }
       
     } catch (err) {
@@ -231,6 +251,8 @@ function broadcastRole() {
           type: "updateRole",
           isLeaderPresent: leader !== null,
           leader: leader ? leader.name : null,
+          isAnsplayer: ansplayer !== null,
+          ansplayer: ansplayer ? ansplayer.name : null,
         })
       );
     }
@@ -243,6 +265,17 @@ function setClientTimer(client, countdown) {
   }
 
   clientCountdowns.set(client, countdown[0]);
+
+  if (countdown.length === 1){
+    clients.forEach((client) => {
+      client.send(
+        JSON.stringify({
+          type: "guessing",
+          isGuessing: true,
+        })
+      );
+    });
+  }
 
   const interval = setInterval(() => {
     let timeLeft = clientCountdowns.get(client) || 0;
@@ -290,7 +323,6 @@ function setClientTimer(client, countdown) {
           timer: timeLeft,
         })
       );
-
       // Также передаём обновление другим клиентам
       broadcastTimerUpdate(client.name, timeLeft);
     }
@@ -332,6 +364,14 @@ function switchLeader() {
         })
       );
 
+      clients.forEach((client) => {
+        client.send(
+          JSON.stringify({
+            type: "guessing",
+            isGuessing: false,
+          })
+        );
+      });
   // const { image, allImagesSelected } = getRandomImage();
 
   // if (allImagesSelected) {
