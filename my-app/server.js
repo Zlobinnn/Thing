@@ -145,14 +145,21 @@ server.on("connection", (ws) => {
         }
       } else if (data.type === "answer yes") {
         // Удалить таймер для игрока
+        // if (clientTimers.has(leader)) {
+        //   clearInterval(clientTimers.get(leader));
+        //   clientTimers.delete(leader);
+        //   clientCountdowns.delete(leader);
+        // }
+      
         if (clientTimers.has(leader)) {
           clearInterval(clientTimers.get(leader));
           clientTimers.delete(leader);
           clientCountdowns.delete(leader);
         }
-      
+
         ansplayer.score += 2;
         leader.score += 1;
+        
         broadcastPlayers();
       } else if (data.type === "answer no") {
         // Продолжить таймер для игрока
