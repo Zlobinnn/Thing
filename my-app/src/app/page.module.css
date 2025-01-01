@@ -91,12 +91,10 @@
 }
 
 .player {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 5px;
-  margin-bottom: 5px;
-  background-color: #fff;
-  border-radius: 4px;
-  font-size: 14px;
-  text-align: center;
 }
 
 .player:last-child {
@@ -106,4 +104,27 @@
 .leader {
   border: 2px solid green;
   font-weight: bold;
+}
+
+.playerInfo {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.score {
+  margin-right: 10px;
+}
+
+.timer {
+  margin-left: 10px;
+}
+
+.score, .timer {
+  flex-shrink: 0; /* Оставляем элементы счёта и таймера фиксированными */
+}
+
+.name {
+  flex-grow: 1; /* Это заставит имя игрока занимать доступное пространство и быть по центру */
+  text-align: center; /* Центрируем имя по горизонтали */
 }

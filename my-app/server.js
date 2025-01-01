@@ -72,6 +72,7 @@ server.on("connection", (ws) => {
 
       if (data.type === "join") {
         ws.name = data.name;
+        ws.score = 0;
         clients.push(ws);
         broadcastPlayers();
       } else if (data.type === "setRole") {
@@ -118,6 +119,21 @@ server.on("connection", (ws) => {
             );
           }
         });
+      } else if (data.type === "answer"){
+        console.log("Ответ от пользователя");
+
+        const playerName = ws.name || "Без имени";
+        const fileName = Array.from(usedImages).at(-1).split("\\").pop()?.split("/").pop()?.split(".")[0];
+
+        if (leader && leader.readyState === WebSocket.OPEN) {
+            leader.send(
+                JSON.stringify({
+                    type: "answer",
+                    ansplayer: playerName,
+                    ans: fileName,
+                })
+            );
+        }
       }
     } catch (err) {
       console.error("Ошибка обработки сообщения:", err);
@@ -148,12 +164,20 @@ server.on("connection", (ws) => {
 
 function broadcastPlayers() {
   const playerNames = clients.map((client) => client.name || "Без имени");
+  const scores = clients.map((client) => client.score);
+
+  const scoreObject = {};
+  playerNames.forEach((name, index) => {
+    scoreObject[name] = scores[index];
+  });
+
   clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(
         JSON.stringify({
           type: "updatePlayers",
           players: playerNames,
+          score: scoreObject,
         })
       );
     }
@@ -202,7 +226,7 @@ function setClientTimer(client, countdown) {
             })
           );
         }
-        
+
         const newCountdown = countdown.slice(1);
         setClientTimer(client, newCountdown);
       }

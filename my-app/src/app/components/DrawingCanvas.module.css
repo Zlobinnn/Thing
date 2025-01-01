@@ -9,6 +9,12 @@
   margin: 0; /* Убираем отступ сверху */
 }
 
+.instructionContainer{
+  display: flex;
+  gap: 20px;
+  font-size: 20px;
+  align-items: center;
+}
   
   .imageContainer {
     flex: 0 0 auto;
@@ -34,7 +40,6 @@
   }
   
   .completeButton {
-    margin-top: 10px;
     padding: 10px 20px;
     font-size: 16px;
     background-color: #007bff;
@@ -48,3 +53,6 @@
     background-color: #0056b3;
   }
   
+  .ans{
+    font-size: 20px;
+  }

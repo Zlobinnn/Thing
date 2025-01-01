@@ -2,10 +2,19 @@
 import React, { useRef, useState, useEffect } from "react";
 import styles from "./DrawingCanvas.module.css";
 import HelpButton from "@/app/components/HelpButton";
+import { isArgumentsObject } from "util/types";
 
 interface DrawingCanvasProps {
   onComplete: (drawingData: string) => void;
   ws: WebSocket | null; // Добавляем WebSocket в пропсы
+}
+
+const timersFolders = {
+  2: [10],
+  3: [5, 8, 10],
+  4: [8, 10],
+  5: [5, 10],
+  6: [10],
 }
 
 const imageFolders: Record<number, string> = {
@@ -35,6 +44,8 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
   const [imageFolder, setImageFolder] = useState<number>(0);
   const [isDrawingVisible, setIsDrawingVisible] = useState<boolean>(false);
   const [isImgVisible, setIsImgVisible] = useState<boolean>(true);
+  const [isAnsVis, setIsAnsVis] = useState<boolean>(false);
+  const [ans, setAns] = useState<string>("");
 
   useEffect(() => {
     if (!ws) return;
@@ -54,6 +65,8 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
       const data = JSON.parse(event.data);
       console.log(data);
       if (data.type === "newImage") {
+        const fileName = data.image.split("\\").pop()?.split("/").pop()?.split(".")[0];
+        setAns(fileName);
         setRandomImage(data.image);
         setImageFolder(data.folder);
         setInstruction(instructions[data.folder]);
@@ -64,6 +77,10 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
         }
         else
           setIsDrawingVisible(false); // Скрываем холст до завершения таймера
+
+        if (data.folder === 2 || data.folder === 6){
+          setIsAnsVis(true);
+        }
       }
 
       if (data.type === "timerUpdate") {
@@ -79,7 +96,8 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
 
       if (data.type === "guess"){
         handleComplete();
-        setIsImgVisible(true);
+        setIsDrawingVisible(false);
+        setIsAnsVis(true);
       }
     };
 
@@ -88,7 +106,7 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
     return () => {
       ws.removeEventListener("message", handleMessage);
     };
-  }, [ws, isDrawingVisible, isImgVisible]);
+  }, [ws, isDrawingVisible, isAnsVis, ans]);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -170,6 +188,11 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
           </>
         )}
       </div>
+
+      <div className={styles.ans}>
+        {isAnsVis && (<>Ответ: {ans}</>)}
+      </div>
+
       <div className={styles.instructionContainer}>
         {instruction && <p>{instruction}</p>}
         <HelpButton params={{ type: imageFolder }} />

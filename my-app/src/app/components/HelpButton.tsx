@@ -47,7 +47,7 @@ export default function HelpButton({ params }: { params: { type: number } }) {
             borderRadius: "8px",
             padding: "10px",
             boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            zIndex: 1000,
+            zIndex: 10000,
           }}
         >
           <p style={{ margin: 0, fontSize: "20px" }}>{instructions[params.type]}</p>
