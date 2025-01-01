@@ -35,7 +35,7 @@ export default function Home() {
 
   useEffect(() => {
     // const socket = new WebSocket("ws://localhost:8080");
-    const socket = new WebSocket("https://bc26-94-19-242-214.ngrok-free.app");
+    const socket = new WebSocket("https://9393-94-19-242-214.ngrok-free.app");
 
     socket.onopen = () => {
       console.log("WebSocket подключен");

@@ -3,9 +3,11 @@ const fs = require("fs");
 const path = require("path");
 
 const PORT = 8080;
-const server = new WebSocket.Server({ port: PORT });
+// const server = new WebSocket.Server({ port: PORT });
+const server = new WebSocket.Server({ host: "0.0.0.0", port: 8080 });
 
 let clients = [];
+let players = {};
 let leader = null; // Текущий ведущий
 
 // Таймеры для каждого клиента
@@ -84,8 +86,9 @@ function getRandomImage() {
   return { image: randomImage, allImagesSelected: false };
 }
 
-server.on("connection", (ws) => {
-  console.log("Новый клиент подключился!");
+server.on("connection", (ws, req) => {
+  const clientIP = req.socket.remoteAddress; // Получаем IP-адрес клиента
+  console.log(`Клиент подключился с IP: ${clientIP}`);
 
   // Обработка сообщений от клиента
   ws.on("message", (message) => {
