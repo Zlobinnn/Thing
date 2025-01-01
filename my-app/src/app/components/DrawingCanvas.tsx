@@ -88,7 +88,7 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
       }
       console.log(data.type);
       if (data.type === "timerEnd") {
-        if (data.folder === 3){
+        if (imageFolder === 3){
           setIsDrawingVisible(true);
         }
         setIsImgVisible(false);

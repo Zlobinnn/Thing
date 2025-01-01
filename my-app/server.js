@@ -326,31 +326,35 @@ function switchLeader() {
   leader = clients[currentLeaderIndex];
 
   broadcastRole();
+  leader.send(
+        JSON.stringify({
+          type: "newImage",
+        })
+      );
 
+  // const { image, allImagesSelected } = getRandomImage();
 
-  const { image, allImagesSelected } = getRandomImage();
+  // if (allImagesSelected) {
+  //   leader.send(
+  //     JSON.stringify({
+  //       type: "allImagesSelected",
+  //       message: "Все изображения были выбраны.",
+  //     })
+  //   );
+  // } else {
+  //   //const countdown = getCountdown(image.folder);
 
-  if (allImagesSelected) {
-    leader.send(
-      JSON.stringify({
-        type: "allImagesSelected",
-        message: "Все изображения были выбраны.",
-      })
-    );
-  } else {
-    //const countdown = getCountdown(image.folder);
+  //   leader.send(
+  //     JSON.stringify({
+  //       type: "newImage",
+  //       image: image.path,
+  //       folder: image.folder,
+  //       timer: timersFolders[image.folder],
+  //     })
+  //   );
 
-    leader.send(
-      JSON.stringify({
-        type: "newImage",
-        image: image.path,
-        folder: image.folder,
-        timer: timersFolders[image.folder],
-      })
-    );
-
-    // Запуск таймера для этого игрока
-    setClientTimer(leader, timersFolders[image.folder]);}
+  //   // Запуск таймера для этого игрока
+  //   setClientTimer(leader, timersFolders[image.folder]);}
 }
 
 console.log("Введите 'start' для начала игры.");
