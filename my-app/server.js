@@ -3,12 +3,11 @@ const fs = require("fs");
 const path = require("path");
 
 const PORT = 8080;
-// const server = new WebSocket.Server({ port: PORT });
-const server = new WebSocket.Server({ host: "0.0.0.0", port: 8080 });
+const server = new WebSocket.Server({ port: PORT });
 
 let clients = [];
-let players = {};
 let leader = null; // Текущий ведущий
+let usersByIp = {}; // Хранение данных пользователей по IP
 
 // Таймеры для каждого клиента
 let clientTimers = new Map(); // Хранит интервалы для таймеров
@@ -87,8 +86,33 @@ function getRandomImage() {
 }
 
 server.on("connection", (ws, req) => {
-  const clientIP = req.socket.remoteAddress; // Получаем IP-адрес клиента
-  console.log(`Клиент подключился с IP: ${clientIP}`);
+  console.log(`Клиент подключился с IP`);
+  const ip =
+    req.headers["x-forwarded-for"]?.split(",")[0] || // Если используется прокси (например, ngrok)
+    req.socket.remoteAddress; // Если прямое подключение
+
+    console.log(`Клиент подключился с IP: ${ip}`);
+  ws.ip = ip; // Сохраняем IP для данного клиента
+
+  if (usersByIp[ip]) {
+    const userData = usersByIp[ip];
+    ws.name = userData.name;
+    ws.score = userData.score;
+    console.log(`Восстановлена сессия для IP ${ip}: ${userData.name}`);
+  } else {
+    // Если клиента нет, добавляем нового
+    ws.name = ip; // Имя будет задаваться позже
+    ws.score = 0; // Начальный счёт
+    usersByIp[ip] = { name: null, score: 0 }; // Инициализация данных
+    ws.send(
+      JSON.stringify({
+        type: "join",
+      })
+    );
+  }
+
+  clients.push(ws);
+  broadcastPlayers();
 
   // Обработка сообщений от клиента
   ws.on("message", (message) => {
@@ -97,8 +121,7 @@ server.on("connection", (ws, req) => {
 
       if (data.type === "join") {
         ws.name = data.name;
-        ws.score = 0;
-        clients.push(ws);
+        usersByIp[ip].name = data.name; // Сохраняем имя для IP
         broadcastPlayers();
       } else if (data.type === "setRole") {
         if (data.role === "Ведущий") {
@@ -224,8 +247,9 @@ server.on("connection", (ws, req) => {
   });
 
   ws.on("close", () => {
-    console.log("Клиент отключился");
+    console.log(`Клиент с IP ${ip} отключился`);
     clients = clients.filter((client) => client !== ws);
+
     if (leader === ws) {
       leader = null;
     }

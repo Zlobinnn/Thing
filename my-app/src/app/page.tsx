@@ -42,13 +42,7 @@ export default function Home() {
       setWs(socket);
 
       // Уведомляем сервер о новом подключении
-      const playerName = prompt("Введите своё имя:") || `Игрок-${Math.floor(Math.random() * 1000)}`;
-      socket.send(
-        JSON.stringify({
-          type: "join",
-          name: playerName,
-        })
-      );
+      
 
       // Устанавливаем начальную роль
       // setRole("Игрок");
@@ -90,6 +84,14 @@ export default function Home() {
         // console.log(data);
         setWinner(data.winner);
         alert(`Победитель: ${data.winner}!`); 
+      } else if (data.type === "join"){
+        const playerName = prompt("Введите своё имя:") || `Игрок-${Math.floor(Math.random() * 1000)}`;
+        socket.send(
+          JSON.stringify({
+            type: "join",
+            name: playerName,
+          })
+        );
       }
       
     };
