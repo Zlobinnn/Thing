@@ -107,7 +107,12 @@
 }
 
 .ansplayer {
-  border: 2px solid red;
+  border: 2px solid blue;
+  font-weight: bold;
+}
+
+.winner {
+  border: 2px solid gold;
   font-weight: bold;
 }
 

@@ -54,6 +54,26 @@ function getRandomImage() {
   );
   if (availableImages.length === 0) {
     console.log("Все изображения использованы.");
+    let maxScore = -Infinity;
+          let winner = null;
+          
+          clients.forEach((client) => {
+            if (client.score > maxScore) {
+              maxScore = client.score;
+              winner = client.name || "Без имени";
+            }
+          });
+
+          clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(
+                JSON.stringify({
+                  type: "winner",
+                  winner,
+                })
+              );
+            }
+          });
     return { allImagesSelected: true };
   }
   const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)];
@@ -88,12 +108,13 @@ server.on("connection", (ws) => {
         const { image, allImagesSelected } = getRandomImage();
 
         if (allImagesSelected) {
-          ws.send(
-            JSON.stringify({
-              type: "allImagesSelected",
-              message: "Все изображения были выбраны.",
-            })
-          );
+          // ws.send(
+          //   JSON.stringify({
+          //     type: "allImagesSelected",
+          //     message: "Все изображения были выбраны.",
+          //   })
+          // );
+          
         } else {
           //const countdown = getCountdown(image.folder);
 

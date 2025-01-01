@@ -31,6 +31,7 @@ export default function Home() {
   const [answerModalData, setAnswerModalData] = useState<{ ansplayer: string; ans: string } | null>(null); // Данные для модального окна
   const [score, setScore] = useState<PlayerTimer>({});
   const [isAnswerButtonActive, setIsAnswerButtonActive] = useState(false);
+  const [winner, setWinner] = useState<string | null>(null);
 
   useEffect(() => {
     const socket = new WebSocket("ws://localhost:8080");
@@ -85,6 +86,10 @@ export default function Home() {
         setRole(gameTypes[data.gameType]);
         setReceivedDrawing(null);
         setPlayerTimers({});
+      } else if (data.type === "winner"){
+        // console.log(data);
+        setWinner(data.winner);
+        alert(`Победитель: ${data.winner}!`); 
       }
       
     };
@@ -174,7 +179,10 @@ export default function Home() {
               leader === player ? styles.leader : ""
             } ${
               ansplayer === player ? styles.ansplayer : ""
-            }`}
+            } ${
+              winner === player ? styles.winner : ""
+            }
+            `}
           >
             <div className={styles.playerInfo}>
               <span className={styles.score}>{score[player]}</span>

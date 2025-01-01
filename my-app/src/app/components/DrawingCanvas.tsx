@@ -63,7 +63,7 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
 
     const handleMessage = (event: MessageEvent) => {
       const data = JSON.parse(event.data);
-      console.log(data);
+      // console.log(data);
       if (data.type === "newImage") {
         const fileName = data.image.split("\\").pop()?.split("/").pop()?.split(".")[0];
         setAns(fileName);
@@ -73,7 +73,7 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
         setTimer(data.timer); // Устанавливаем таймер с сервера
         if (data.folder === 4){
           setIsDrawingVisible(true);
-          console.log("set", isDrawingVisible);
+          // console.log("set", isDrawingVisible);
         }
         else
           setIsDrawingVisible(false); // Скрываем холст до завершения таймера
@@ -86,7 +86,7 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
       if (data.type === "timerUpdate") {
         setTimer(data.timer);
       }
-      console.log(data.type);
+      // console.log(data.type);
       if (data.type === "timerEnd") {
         if (imageFolder === 3){
           setIsDrawingVisible(true);
@@ -194,7 +194,7 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
         {randomImage && isImgVisible && (
           <>
             <img src={randomImage} alt="Random" className={styles.randomImage} />
-            <div className={styles.timer}>{timer}s</div>
+            {/* <div className={styles.timer}>{timer}s</div> */}
           </>
         )}
       </div>
