@@ -11,6 +11,7 @@ let leader = null; // Текущий ведущий
 // Таймеры для каждого клиента
 let clientTimers = new Map(); // Хранит интервалы для таймеров
 let clientCountdowns = new Map(); // Хранит оставшееся время для клиентов
+let ansplayer = null;
 
 // Папки с изображениями (указаны относительно public)
 const imageFolders = {
@@ -119,22 +120,51 @@ server.on("connection", (ws) => {
             );
           }
         });
-      } else if (data.type === "answer"){
+      } else if (data.type === "answer") {
         console.log("Ответ от пользователя");
-
+      
         const playerName = ws.name || "Без имени";
         const fileName = Array.from(usedImages).at(-1).split("\\").pop()?.split("/").pop()?.split(".")[0];
-
-        if (leader && leader.readyState === WebSocket.OPEN) {
-            leader.send(
-                JSON.stringify({
-                    type: "answer",
-                    ansplayer: playerName,
-                    ans: fileName,
-                })
-            );
+      
+        ansplayer = ws;
+      
+        // Приостановить таймер игрока
+        if (clientTimers.has(leader)) {
+          clearInterval(clientTimers.get(leader));
+          clientTimers.delete(leader);
         }
+      
+        if (leader && leader.readyState === WebSocket.OPEN) {
+          leader.send(
+            JSON.stringify({
+              type: "answer",
+              ansplayer: playerName,
+              ans: fileName,
+            })
+          );
+        }
+      } else if (data.type === "answer yes") {
+        // Удалить таймер для игрока
+        if (clientTimers.has(leader)) {
+          clearInterval(clientTimers.get(leader));
+          clientTimers.delete(leader);
+          clientCountdowns.delete(leader);
+        }
+      
+        ansplayer.score += 2;
+        leader.score += 1;
+        broadcastPlayers();
+      } else if (data.type === "answer no") {
+        // Продолжить таймер для игрока
+        if (clientCountdowns.has(leader)) {
+          const remainingTime = clientCountdowns.get(leader);
+          setClientTimer(leader, [remainingTime]);
+        }
+      
+        ansplayer.score -= 1;
+        broadcastPlayers();
       }
+      
     } catch (err) {
       console.error("Ошибка обработки сообщения:", err);
     }

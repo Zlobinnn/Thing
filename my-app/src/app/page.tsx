@@ -119,12 +119,20 @@ export default function Home() {
   };
 
   const handleYes = () => {
-    alert("Ответ принят!");
+    ws?.send(
+      JSON.stringify({
+        type: "answer yes",
+      })
+    );
     closeAnswerWindow();
   };
 
   const handleNo = () => {
-    alert("Ответ отклонён!");
+    ws?.send(
+      JSON.stringify({
+        type: "answer no",
+      })
+    );
     closeAnswerWindow();
   };
 
