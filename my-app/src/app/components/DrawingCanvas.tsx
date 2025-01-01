@@ -99,6 +99,9 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
         setIsDrawingVisible(false);
         setIsAnsVis(true);
       }
+      if (data.type === "timeOver"){
+        onComplete("");
+      }
     };
 
     ws.addEventListener("message", handleMessage);
@@ -152,7 +155,7 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
 
   const handleComplete = () => {
     if (!isDrawingVisible) {
-      onComplete("");
+      // onComplete("");
       return;
     }
 
@@ -171,7 +174,14 @@ export default function DrawingCanvas({ onComplete, ws }: DrawingCanvasProps) {
     finalCtx.drawImage(canvas, 0, 0);
 
     const drawingData = finalCanvas.toDataURL("image/png");
-    onComplete(drawingData);
+    // onComplete(drawingData);
+
+    ws?.send(
+      JSON.stringify({
+        type: "drawing",
+        drawing: drawingData,
+      })
+    );
   };
 
   const preventContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {

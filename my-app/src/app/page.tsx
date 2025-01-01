@@ -86,15 +86,8 @@ export default function Home() {
   };
 
   const handleDrawingComplete = (drawingData: string) => {
-    // setIsDrawing(false);
+    setIsDrawing(false);
     setRole("Игрок");
-
-    ws?.send(
-      JSON.stringify({
-        type: "drawing",
-        drawing: drawingData,
-      })
-    );
 
     ws?.send(
       JSON.stringify({
@@ -125,6 +118,7 @@ export default function Home() {
       })
     );
     closeAnswerWindow();
+    setIsDrawing(false);
   };
 
   const handleNo = () => {

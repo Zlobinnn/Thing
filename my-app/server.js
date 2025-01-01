@@ -260,6 +260,15 @@ function setClientTimer(client, countdown) {
         const newCountdown = countdown.slice(1);
         setClientTimer(client, newCountdown);
       }
+      if (countdown.length===1){
+        client.send(
+          JSON.stringify({
+            type: "timeOver",
+          })
+        );
+        leader.score-=1;
+        broadcastPlayers();
+      }
 
     } else {
       timeLeft -= 1;
