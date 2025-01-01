@@ -45,7 +45,9 @@ export default function Home() {
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
-      if (data.type === "drawing") {
+      if (data.type === "newImage"){
+        setIsDrawing(true);
+      } else if (data.type === "drawing") {
         setReceivedDrawing(data.drawing); // Устанавливаем полученное изображение
       } else if (data.type === "updateRole") {
         setIsLeaderPresent(data.isLeaderPresent); // Обновляем наличие ведущего

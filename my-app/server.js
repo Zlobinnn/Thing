@@ -12,6 +12,7 @@ let leader = null; // Текущий ведущий
 let clientTimers = new Map(); // Хранит интервалы для таймеров
 let clientCountdowns = new Map(); // Хранит оставшееся время для клиентов
 let ansplayer = null;
+let currentLeaderIndex = -1;
 
 // Папки с изображениями (указаны относительно public)
 const imageFolders = {
@@ -161,6 +162,7 @@ server.on("connection", (ws) => {
         leader.score += 1;
         
         broadcastPlayers();
+        switchLeader();
       } else if (data.type === "answer no") {
         // Продолжить таймер для игрока
         if (clientCountdowns.has(leader)) {
@@ -275,6 +277,7 @@ function setClientTimer(client, countdown) {
         );
         leader.score-=1;
         broadcastPlayers();
+        switchLeader();
       }
 
     } else {
@@ -309,5 +312,66 @@ function broadcastTimerUpdate(playerName, timer) {
     }
   });
 }
+
+function switchLeader() {
+  if (clients.length === 0) {
+    leader = null;
+    currentLeaderIndex = 0;
+    broadcastRole();
+    return;
+  }
+
+  // Увеличиваем индекс текущего ведущего
+  currentLeaderIndex = (currentLeaderIndex + 1) % clients.length;
+  leader = clients[currentLeaderIndex];
+
+  broadcastRole();
+
+
+  const { image, allImagesSelected } = getRandomImage();
+
+  if (allImagesSelected) {
+    leader.send(
+      JSON.stringify({
+        type: "allImagesSelected",
+        message: "Все изображения были выбраны.",
+      })
+    );
+  } else {
+    //const countdown = getCountdown(image.folder);
+
+    leader.send(
+      JSON.stringify({
+        type: "newImage",
+        image: image.path,
+        folder: image.folder,
+        timer: timersFolders[image.folder],
+      })
+    );
+
+    // Запуск таймера для этого игрока
+    setClientTimer(leader, timersFolders[image.folder]);}
+}
+
+console.log("Введите 'start' для начала игры.");
+process.stdin.on("data", (data) => {
+  const command = data.toString().trim();
+  if (command === "start") {
+    gameStarted = true;
+    console.log("Игра началась!");
+    if (clients.length > 0) {
+      leader = clients[0];
+      broadcastRole();
+      
+      switchLeader();
+
+      
+
+
+    }
+  } else {
+    console.log(`Неизвестная команда: ${command}`);
+  }
+});
 
 console.log(`WebSocket сервер запущен на порту ${PORT}`);
