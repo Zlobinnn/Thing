@@ -24,12 +24,20 @@ const imageFolders = {
   6: "/6_danet",
 };
 
-const timersFolders = {
+const ttimersFolders = {
   2: [60],
   3: [15, 40, 60],
   4: [40, 60],
   5: [15, 60],
   6: [120],
+}
+
+const timersFolders = {
+  2: [5],
+  3: [5, 6, 6],
+  4: [5, 6],
+  5: [5, 6],
+  6: [5],
 }
 
 // Загружаем изображения
@@ -98,12 +106,13 @@ server.on("connection", (ws, req) => {
     const userData = usersByIp[ip];
     ws.name = userData.name;
     ws.score = userData.score;
+    userData.isActive = true;
     console.log(`Восстановлена сессия для IP ${ip}: ${userData.name}`);
   } else {
     // Если клиента нет, добавляем нового
     ws.name = ip; // Имя будет задаваться позже
     ws.score = 0; // Начальный счёт
-    usersByIp[ip] = { name: null, score: 0 }; // Инициализация данных
+    usersByIp[ip] = { name: null, score: 0, isActive: true}; // Инициализация данных
     ws.send(
       JSON.stringify({
         type: "join",
@@ -248,6 +257,7 @@ server.on("connection", (ws, req) => {
 
   ws.on("close", () => {
     usersByIp[ip].score = ws.score;
+    usersByIp[ip].isActive = false;
     console.log(`Клиент с IP ${ip} отключился`);
     clients = clients.filter((client) => client !== ws);
 
@@ -255,11 +265,11 @@ server.on("connection", (ws, req) => {
       leader = null;
     }
 
-    if (clientTimers.has(ws)) {
-      clearInterval(clientTimers.get(ws));
-      clientTimers.delete(ws);
-      clientCountdowns.delete(ws);
-    }
+    // if (clientTimers.has(ws)) {
+    //   clearInterval(clientTimers.get(ws));
+    //   clientTimers.delete(ws);
+    //   clientCountdowns.delete(ws);
+    // }
 
     broadcastPlayers();
     broadcastRole();
@@ -357,7 +367,8 @@ function setClientTimer(client, countdown) {
             type: "timeOver",
           })
         );
-        leader.score-=1;
+        if (leader)
+          leader.score-=1;
         broadcastPlayers();
         switchLeader();
       }
@@ -457,10 +468,6 @@ process.stdin.on("data", (data) => {
       broadcastRole();
       
       switchLeader();
-
-      
-
-
     }
   } else {
     console.log(`Неизвестная команда: ${command}`);

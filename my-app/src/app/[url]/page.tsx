@@ -21,6 +21,14 @@ const gameTypes: Record<number, string> = {
   6: "Данетка",
 }
 
+const gameTitles: Record<number, string> = {
+  2: "Ведущий объясняет картинку, заменяя существительные на 'штука' или 'существо'",
+  3: "Ведущий запоминает картинку, затем рисует её",
+  4: "Ведущий рисует картинку по какой-то фразе",
+  5: "Ведущий запоминает картинку, затем описывает её вслух",
+  6: "Ведущему задаются вопросы, на которые он может ответить 'да', 'нет' или 'не имеет значение'",
+}
+
 export default function Home({ params }: Props) {
   const [isDrawing, setIsDrawing] = useState(false); // Состояние режима рисования
   const [receivedDrawing, setReceivedDrawing] = useState<string | null>(null); // Полученное изображение
@@ -37,6 +45,7 @@ export default function Home({ params }: Props) {
   const [isAnswerButtonActive, setIsAnswerButtonActive] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
   const [url, setUrl] = useState<string | null>(null);
+  const [gameTitle, setGameTitle] = useState("Игрок"); // Роль игрока
 
   useEffect(() => {
     // Извлечение параметров из `params` (асинхронный объект)
@@ -91,6 +100,7 @@ export default function Home({ params }: Props) {
         setIsAnswerButtonActive(data.isGuessing);
       } else if (data.type === "gameType"){
         setRole(gameTypes[data.gameType]);
+        setGameTitle(gameTitles[data.gameType]);
         setReceivedDrawing(null);
         setPlayerTimers({});
       } else if (data.type === "winner"){
@@ -181,7 +191,7 @@ export default function Home({ params }: Props) {
   return (
     <div className={styles.page}>
       {/* Отображение роли */}
-      <div className={styles.roleDisplay}>
+      <div className={styles.roleDisplay} title={gameTitle}>
         Тип игры: {role}
       </div>
 
