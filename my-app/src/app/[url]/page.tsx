@@ -10,9 +10,7 @@ interface PlayerTimer {
 }
 
 interface Props {
-  params: {
-    url: string;
-  };
+  params: Promise<{ url: string }>;
 }
 
 const gameTypes: Record<number, string> = {
@@ -38,11 +36,19 @@ export default function Home({ params }: Props) {
   const [score, setScore] = useState<PlayerTimer>({});
   const [isAnswerButtonActive, setIsAnswerButtonActive] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
+  const [url, setUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const url = params.url;
-    // const socket = new WebSocket(`ws://localhost:${url}`);
-    const socket = new WebSocket(`https://${url}.ngrok-free.app`);
+    // Извлечение параметров из `params` (асинхронный объект)
+    params.then((resolvedParams) => {
+      setUrl(resolvedParams.url);
+    });
+  }, [params]);
+
+  useEffect(() => {
+    if (url){
+    const socket = new WebSocket(`ws://localhost:${url}`);
+    // const socket = new WebSocket(`https://${url}.ngrok-free.app`);
 
     socket.onopen = () => {
       console.log("WebSocket подключен");
@@ -106,7 +112,8 @@ export default function Home({ params }: Props) {
     return () => {
       socket.close();
     };
-  }, []);
+  }
+  }, [url]);
 
   const handleDrawingStart = () => {
     if (role !== "Игрок" || isLeaderPresent) return;
