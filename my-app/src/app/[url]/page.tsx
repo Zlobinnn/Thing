@@ -47,8 +47,8 @@ export default function Home({ params }: Props) {
 
   useEffect(() => {
     if (url){
-    const socket = new WebSocket(`ws://localhost:${url}`);
-    // const socket = new WebSocket(`https://${url}.ngrok-free.app`);
+    // const socket = new WebSocket(`ws://localhost:${url}`);
+    const socket = new WebSocket(`https://${url}.ngrok-free.app`);
 
     socket.onopen = () => {
       console.log("WebSocket подключен");
