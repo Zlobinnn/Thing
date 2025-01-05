@@ -24,20 +24,20 @@ const imageFolders = {
   6: "/6_danet",
 };
 
-const ttimersFolders = {
-  2: [60],
-  3: [15, 40, 60],
-  4: [40, 60],
-  5: [15, 60],
-  6: [120],
-}
+// const timersFolders = {
+//   2: [120],
+//   3: [15, 40, 120],
+//   4: [40, 120],
+//   5: [15, 120],
+//   6: [120],
+// }
 
 const timersFolders = {
-  2: [5],
-  3: [5, 6, 6],
-  4: [5, 6],
-  5: [5, 6],
-  6: [5],
+  2: [4],
+  3: [4, 4, 4],
+  4: [4, 4],
+  5: [4, 4],
+  6: [4],
 }
 
 // Загружаем изображения
@@ -110,7 +110,7 @@ server.on("connection", (ws, req) => {
     console.log(`Восстановлена сессия для IP ${ip}: ${userData.name}`);
   } else {
     // Если клиента нет, добавляем нового
-    ws.name = ip; // Имя будет задаваться позже
+    ws.name = "Без имени"; // Имя будет задаваться позже
     ws.score = 0; // Начальный счёт
     usersByIp[ip] = { name: null, score: 0, isActive: true}; // Инициализация данных
     ws.send(
@@ -141,6 +141,8 @@ server.on("connection", (ws, req) => {
         broadcastRole();
       } else if (data.type === "requestImage") {
         const { image, allImagesSelected } = getRandomImage();
+
+        console.log(image);
 
         if (allImagesSelected) {
           // ws.send(
@@ -223,7 +225,7 @@ server.on("connection", (ws, req) => {
         // });
         broadcastRole();
       } else if (data.type === "answer yes") {
-        console.log(clientTimers,clientCountdowns);
+        // console.log(clientTimers,clientCountdowns);
         if (clientTimers.has(leader)) {
           clearInterval(clientTimers.get(leader));
           clientTimers.delete(leader);

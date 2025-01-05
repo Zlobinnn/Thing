@@ -98,11 +98,13 @@ export default function Home({ params }: Props) {
         setAnsplayer(data.ansplayer);
       } else if (data.type === "guessing"){
         setIsAnswerButtonActive(data.isGuessing);
+        playSound("start");
       } else if (data.type === "gameType"){
         setRole(gameTypes[data.gameType]);
         setGameTitle(gameTitles[data.gameType]);
         setReceivedDrawing(null);
         setPlayerTimers({});
+        playSound("reveal");
       } else if (data.type === "winner"){
         // console.log(data);
         setWinner(data.winner);
@@ -184,9 +186,12 @@ export default function Home({ params }: Props) {
     closeAnswerWindow();
   };
 
-
-
-
+  const playSound = (sound: string) => {
+    const audio = new Audio(`/sounds/${sound}.mp3`); // Укажите путь к файлу
+    audio.play().catch((err) => {
+      console.error("Не удалось воспроизвести звук:", err);
+    });
+  };
 
   return (
     <div className={styles.page}>
