@@ -24,21 +24,21 @@ const imageFolders = {
   6: "/6_danet",
 };
 
-// const timersFolders = {
-//   2: [120],
-//   3: [15, 40, 120],
-//   4: [40, 120],
-//   5: [15, 120],
-//   6: [120],
-// }
-
 const timersFolders = {
-  2: [4],
-  3: [4, 4, 4],
-  4: [4, 4],
-  5: [4, 4],
-  6: [4],
+  2: [120],
+  3: [15, 40, 120],
+  4: [40, 120],
+  5: [15, 120],
+  6: [120],
 }
+
+// const timersFolders = {
+//   2: [4],
+//   3: [4, 4, 4],
+//   4: [4, 4],
+//   5: [4, 4],
+//   6: [4],
+// }
 
 // Загружаем изображения
 let images = [];
@@ -128,7 +128,11 @@ server.on("connection", (ws, req) => {
     try {
       const data = JSON.parse(message);
 
-      if (data.type === "join") {
+      if (data.type === "rename"){
+        ws.name = data.name;
+        usersByIp[ip].name = data.name; // Сохраняем имя для IP
+        broadcastPlayers();
+      } else if (data.type === "join") {
         ws.name = data.name;
         usersByIp[ip].name = data.name; // Сохраняем имя для IP
         broadcastPlayers();
@@ -191,6 +195,10 @@ server.on("connection", (ws, req) => {
           }
         });
       } else if (data.type === "answer") {
+        if (ansplayer) {
+          return;
+        }
+        
         console.log("Ответ от пользователя");
       
         const playerName = ws.name || "Без имени";

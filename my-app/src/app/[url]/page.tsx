@@ -4,6 +4,7 @@ import styles from "./page.module.css";
 import Area from "@/app/components/area";
 import DrawingCanvas from "@/app/components/DrawingCanvas";
 import AnswerWindow from "@/app/components/AnswerWindow";
+import Header from "@/app/components/header";
 
 interface PlayerTimer {
   [key: string]: number; // Объект, где ключ — имя игрока, а значение — оставшееся время
@@ -195,6 +196,7 @@ export default function Home({ params }: Props) {
 
   return (
     <div className={styles.page}>
+      <Header ws={ws}/>
       {/* Отображение роли */}
       <div className={styles.roleDisplay} title={gameTitle}>
         Тип игры: {role}
@@ -202,7 +204,7 @@ export default function Home({ params }: Props) {
 
       {/* Список игроков */}
       {/* Список игроков */}
-      <div className={styles.playerList}>
+      <div className="playerList">
         {players.map((player) => (
           <div
             key={player}

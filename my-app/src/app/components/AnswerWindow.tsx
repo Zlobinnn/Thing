@@ -1,6 +1,7 @@
 // components/AnswerWindow.tsx
 import React from "react";
 import styles from "./AnswerWindow.module.css";
+import { useEffect, useState } from "react";
 
 interface AnswerWindowProps {
   ansplayer: string;
@@ -12,10 +13,21 @@ interface AnswerWindowProps {
 
 export default function AnswerWindow(props: AnswerWindowProps) {
   const { ansplayer, ans, onClose, onYes, onNo } = props;
+  const [theme, setTheme] = useState<string>("modalContent");
+
+  const getTheme = () => {
+    const theme1 = localStorage.getItem("theme");
+    const newTheme = `modalContent${theme1 ? "-" + theme1 : ""}`;
+    setTheme(newTheme);
+  }
+
+  useEffect(() => {
+      getTheme();
+  }, []);
 
   return (
     <div className={styles.modal}>
-      <div className={styles.modalContent}>
+      <div className={theme}>
         <h2>Отвечает {ansplayer}</h2>
         <p>Правильный ответ: {ans}</p>
         <div className={styles.buttonContainer}>

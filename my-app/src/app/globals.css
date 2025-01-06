@@ -3,6 +3,8 @@ body{
   display: flex;
   justify-content: center;
   overflow: hidden;
+  margin: 0;
+  transition: background-color .4s, color .4s;
 }
 
 .area {
@@ -61,4 +63,73 @@ body{
 
 .closeButton:hover {
   background: #ddd;
+}
+
+.header{
+  font-size: 20px;
+  display: flex;
+  justify-content: right;
+}
+
+.theme-icon:hover,
+.editName-icon:hover{
+  opacity: 0.5;
+}
+
+.theme-icon,
+.editName-icon{
+  font-size: 30px;
+  margin: 2px;
+}
+
+.night-theme{
+  background-color: #202020;
+  color: #cccaca;
+}
+
+.playerList {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  width: 150px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 2000;
+}
+
+.playerList.night-theme {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #363739;
+  border: 1px solid #00000079;
+  border-radius: 8px;
+  padding: 10px;
+  width: 150px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 2000;
+}
+
+.modalContent {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  width: 300px;
+  color: #202020;
+  cursor: default;
+}
+
+.modalContent-night-theme {
+  background-color: #363739;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  width: 300px;
+  cursor: default;
 }
