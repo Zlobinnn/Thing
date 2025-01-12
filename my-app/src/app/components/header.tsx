@@ -13,7 +13,8 @@ export default function Header({ ws }: HeaderProps) {
         if (theme){
             document.body.classList.toggle(theme);
             const playerListElements = document.getElementsByClassName("playerList");
-            playerListElements[0].classList.toggle(theme);
+            if (playerListElements[0]){
+              playerListElements[0].classList.toggle(theme);}
 
             const playerListElements1 = document.getElementsByClassName("modalContent");
             if (playerListElements1[0]){
@@ -34,7 +35,8 @@ export default function Header({ ws }: HeaderProps) {
         document.body.classList.toggle("night-theme");
         
         const playerListElements = document.getElementsByClassName("playerList");
-        playerListElements[0].classList.toggle("night-theme");
+        if(playerListElements[0])
+          playerListElements[0].classList.toggle("night-theme");
 
         const playerListElements1 = document.getElementsByClassName("modalContent");
         if(playerListElements1[0])

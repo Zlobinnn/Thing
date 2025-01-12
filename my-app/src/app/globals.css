@@ -69,6 +69,11 @@ body{
   font-size: 20px;
   display: flex;
   justify-content: right;
+  position: fixed; /* Или relative/absolute, если нужно другое поведение */
+  top: 0;
+  left: 0;
+  width: 100%; /* Чтобы Header занимал всю ширину */
+  z-index: 10000; /* Для предотвращения наложения других элементов */
 }
 
 .theme-icon:hover,

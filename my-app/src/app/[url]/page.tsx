@@ -58,7 +58,8 @@ export default function Home({ params }: Props) {
   useEffect(() => {
     if (url){
     // const socket = new WebSocket(`ws://localhost:${url}`);
-    const socket = new WebSocket(`https://${url}.ngrok-free.app`);
+    //const socket = new WebSocket(`https://${url}.ngrok-free.app`);
+    const socket = new WebSocket(`https://5l7ntbfk-8080.inc1.devtunnels.ms`);
 
     socket.onopen = () => {
       console.log("WebSocket подключен");
@@ -66,7 +67,6 @@ export default function Home({ params }: Props) {
 
       // Уведомляем сервер о новом подключении
       
-
       // Устанавливаем начальную роль
       // setRole("Игрок");
     };
